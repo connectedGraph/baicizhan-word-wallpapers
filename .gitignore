@@ -11,6 +11,9 @@ __pycache__/
 .venv/
 venv/
 
+# GitHub Pages build artifact（由 scripts/build_pages.py 生成）
+dist/
+
 # 本机私有/超大原始文件（不提交）
 单词图片包.rar
 原始图片/
