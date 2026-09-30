@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百词斩 · 早起单词壁纸观赏站</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #1a1d25;
+    --fg: #e8eaf0;
+    --muted: #8b91a0;
+    --accent: #4a9eff;
+    --accent2: #ff7a59;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(15,17,21,.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #262b36;
+    padding: 14px 20px;
+  }
+  .bar { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  header h1 { font-size: 18px; font-weight: 600; letter-spacing: .5px; }
+  header h1 .dot { color: var(--accent2); }
+  .count { color: var(--muted); font-size: 13px; }
+  .spacer { flex: 1; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    background: #232835; color: var(--fg);
+    border: 1px solid #313a4d; border-radius: 8px;
+    padding: 8px 16px; font-size: 13px; cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  button:hover { background: #2c3445; }
+  button:active { transform: scale(.97); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+  button.primary:hover { background: #6ab2ff; }
+  input[type=search] {
+    background: #14171e; border: 1px solid #313a4d; border-radius: 8px;
+    color: var(--fg); padding: 8px 12px; font-size: 13px; width: 180px;
+  }
+  input[type=search]:focus { outline: none; border-color: var(--accent); }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+  /* 全屏欣赏 */
+  .viewer { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.96); z-index: 50; padding: 30px; }
+  .viewer.open { display: flex; align-items: center; justify-content: center; }
+  .viewer img {
+    max-width: 92vw; max-height: 84vh; object-fit: contain;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6); border-radius: 6px;
+    animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: scale(1); } }
+  .viewer .caption {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    color: var(--muted); font-size: 13px; background: rgba(0,0,0,.6);
+    padding: 6px 14px; border-radius: 20px; white-space: nowrap;
+  }
+  .viewer .nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.15);
+    color: #fff; border-radius: 50%; width: 52px; height: 52px; font-size: 22px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .viewer .nav:hover { background: rgba(255,255,255,.12); }
+  .viewer .prev { left: 30px; }
+  .viewer .next { right: 30px; }
+  .viewer .close { position: absolute; top: 18px; right: 24px; }
+  .viewer .close,
+  .viewer .shuffle {
+    width: 44px; height: 44px; font-size: 20px; border: 1px solid rgba(255,255,255,.15);
+    background: rgba(255,255,255,.05); color: #fff; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .viewer .nav, .viewer .close, .viewer .shuffle { position: fixed; }
+  /* 网格 */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .tile { aspect-ratio: 3/4; overflow: hidden; border-radius: 8px; background: var(--card); cursor: pointer; position: relative; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
+  .tile:hover img { transform: scale(1.04); }
+  .tile .tag { position: absolute; inset: auto 8px 6px 8px; color: rgba(255,255,255,.9); font-size: 11px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,.7); opacity: 0; transition: opacity .2s; }
+  .tile:hover .tag { opacity: 1; }
+  .empty { text-align: center; color: var(--muted); padding: 80px 0; font-size: 15px; }
+  .hint { text-align: center; color: var(--muted); font-size: 12px; margin-top: 26px; line-height: 1.8; }
+  @media (max-width: 600px) {
+    .viewer .prev { left: 10px; } .viewer .next { right: 10px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <h1>百词斩<span class="dot">·</span>早起单词壁纸</h1>
+    <span class="count" id="count">共 0 张</span>
+    <div class="spacer"></div>
+    <div class="actions">
+      <input type="search" id="search" placeholder="搜索单词或日期…" autocomplete="off">
+      <button id="btnRandom">🎲 随机一张</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">没有匹配的图片 🫥</div>
+  <div class="hint">
+    点击图片全屏欣赏 · 左右箭头切换 · 随意翻看 451 张历史早起单词壁纸<br>
+    数据仅供个人学习 · 图片版权归百词斩所有 · 遵循 CC BY-NC 4.0
+  </div>
+</main>
+
+<!-- 全屏查看器 -->
+<div class="viewer" id="viewer">
+  <button class="close" id="vClose" title="关闭">✕</button>
+  <button class="nav prev" id="vPrev">‹</button>
+  <img id="vImg" src="" alt="">
+  <button class="nav next" id="vNext">›</button>
+  <div class="caption" id="vCaption"></div>
+</div>
+
+<script>
+(function(){
+  // 动态发现图片：尝试从海报数据/source.txt 或直接扫描
+  // JSON 由构建时生成。此处尝试多来源。
+  var IMAGES = [];
+  var IMAGE_DIR = '海报数据';
+  var loaded = false;
+
+  function loadManifest(cb){
+    // 1) 尝试 海报数据/manifest.json（最可靠）
+    fetch(IMAGE_DIR + '/manifest.json').then(r => { if(!r.ok) throw 0; return r.json(); })
+      .then(d => { IMAGES = d.files; cb(); })
+      .catch(() => {
+        // 2) 回退：尝试 JavaScript 数组（由 index.html 内联）
+        if (typeof window.__BAICI_IMAGES__ !== 'undefined') { IMAGES = window.__BAICI_IMAGES__; cb(); }
+        else { /* 3) 尽最大努力:列出目录不可行,显示提示 */ document.getElementById('count').textContent = '图片需 manifest 支持'; cb(); }
+      });
+  }
+
+  var grid = document.getElementById('grid');
+  var empty = document.getElementById('empty');
+  var countEl = document.getElementById('count');
+  var viewer = document.getElementById('viewer');
+  var vImg = document.getElementById('vImg');
+  var vCaption = document.getElementById('vCaption');
+  var cur = -1, curList = [];
+
+  function render(){
+    grid.innerHTML = '';
+    curList = IMAGES;
+    if (window.__filtered) curList = window.__filtered;
+    countEl.textContent = '共 ' + curList.length + ' 张';
+    empty.style.display = curList.length ? 'none' : 'block';
+    curList.forEach(function(fn, i){
+      var tile = document.createElement('div');
+      tile.className = 'tile';
+      var img = document.createElement('img');
+      img.loading = 'lazy';
+      img.src = IMAGE_DIR + '/' + encodeURIComponent(fn);
+      img.alt = fn;
+      img.onerror = function(){ tile.style.display = 'none'; };
+      var tag = document.createElement('div');
+      tag.className = 'tag';
+      tag.textContent = prettyName(fn);
+      tile.appendChild(img); tile.appendChild(tag);
+      tile.onclick = function(){ openAt(i); };
+      grid.appendChild(tile);
+    });
+  }
+
+  function prettyName(fn){
+    // poster_3_20_16_20160407171258_44856.png → 2016-04-07
+    var m = fn.match(/200(\d)0?(\d)0?(\d)/);
+    if(m){ return '20' + m[1] + '-' + m[2] + '-' + m[3]; }
+    return fn.replace(/^poster_/,'').replace(/\.png$/,'').slice(0,12);
+  }
+
+  function openAt(i){
+    cur = i;
+    vImg.src = IMAGE_DIR + '/' + encodeURIComponent(curList[i]);
+    document.title = prettyName(curList[i]) + ' · 早起单词壁纸';
+    vCaption.textContent = prettyName(curList[i]);
+    viewer.classList.add('open');
+  }
+  function step(d){ if(cur < 0) return; openAt((cur + d + curList.length) % curList.length); }
+
+  document.getElementById('vClose').onclick = function(){ viewer.classList.remove('open'); };
+  document.getElementById('vPrev').onclick = function(){ step(-1); };
+  document.getElementById('vNext').onclick = function(){ step(1); };
+  viewer.onclick = function(e){ if(e.target === viewer) viewer.classList.remove('open'); };
+  document.addEventListener('keydown', function(e){
+    if(!viewer.classList.contains('open')) return;
+    if(e.key === 'Escape') viewer.classList.remove('open');
+    if(e.key === 'ArrowLeft') step(-1);
+    if(e.key === 'ArrowRight') step(1);
+  });
+
+  // 随机
+  document.getElementById('btnRandom').onclick = function(){
+    var n = Math.floor(Math.random() * curList.length);
+    openAt(n);
+  };
+
+  // 搜索
+  document.getElementById('search').addEventListener('input', function(e){
+    var q = e.target.value.trim().toLowerCase();
+    if(!q){ window.__filtered = null; }
+    else { window.__filtered = IMAGES.filter(f => f.toLowerCase().includes(q) || prettyName(f).includes(q)); }
+    render();
+  });
+
+  loadManifest(render);
+})();
+</script>
+</body>
+</html>

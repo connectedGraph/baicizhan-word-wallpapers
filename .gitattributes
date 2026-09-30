@@ -1,0 +1,4 @@
+# 本仓库图片已转为普通 git 文件，由 GitHub Pages 直接渲染。
+# 如未来再次使用 Git LFS，添加回对应规则即可。
+*.rar filter=lfs diff=lfs merge=lfs -text retention=1
+*.zip filter=lfs diff=lfs merge=lfs -text retention=1

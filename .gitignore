@@ -1,0 +1,17 @@
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 本机私有/超大原始文件（不提交）
+单词图片包.rar
+原始图片/
+采集缓存/
