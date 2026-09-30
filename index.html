@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>百词斩 · 早起单词壁纸观赏站</title>
+<title>百词斩单词海报</title>
 <style>
   :root {
     --bg: #0f1115;
@@ -99,21 +99,21 @@
 
 <header>
   <div class="bar">
-    <h1>百词斩<span class="dot">·</span>早起单词壁纸</h1>
+    <h1>百词斩<span class="dot">·</span>单词海报</h1>
     <span class="count" id="count">共 0 张</span>
     <div class="spacer"></div>
     <div class="actions">
-      <input type="search" id="search" placeholder="搜索单词或日期…" autocomplete="off">
-      <button id="btnRandom">🎲 随机一张</button>
+      <input type="search" id="search" placeholder="搜索单词…" autocomplete="off">
+      <button id="btnRandom">随机一张</button>
     </div>
   </div>
 </header>
 
 <main>
   <div class="grid" id="grid"></div>
-  <div class="empty" id="empty" style="display:none">没有匹配的图片 🫥</div>
+  <div class="empty" id="empty" style="display:none">没有匹配的图片</div>
   <div class="hint">
-    点击图片全屏欣赏 · 左右箭头切换 · 随意翻看 451 张历史早起单词壁纸<br>
+    点击图片全屏欣赏 · 左右箭头切换 · 随意翻看百词斩单词海报<br>
     数据仅供个人学习 · 图片版权归百词斩所有 · 遵循 CC BY-NC 4.0
   </div>
 </main>
@@ -178,16 +178,13 @@
   }
 
   function prettyName(fn){
-    // poster_3_20_16_20160407171258_44856.png → 2016-04-07
-    var m = fn.match(/200(\d)0?(\d)0?(\d)/);
-    if(m){ return '20' + m[1] + '-' + m[2] + '-' + m[3]; }
-    return fn.replace(/^poster_/,'').replace(/\.png$/,'').slice(0,12);
+    return fn.replace(/\.png$/i, '').replace(/-\d+$/, '');
   }
 
   function openAt(i){
     cur = i;
     vImg.src = IMAGE_DIR + '/' + encodeURIComponent(curList[i]);
-    document.title = prettyName(curList[i]) + ' · 早起单词壁纸';
+    document.title = prettyName(curList[i]) + ' · 百词斩单词海报';
     vCaption.textContent = prettyName(curList[i]);
     viewer.classList.add('open');
   }
